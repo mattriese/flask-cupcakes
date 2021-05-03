@@ -1,6 +1,6 @@
 """Flask app for Cupcakes"""
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 
 from flask_debugtoolbar import DebugToolbarExtension
 from models import db, connect_db, Cupcake
@@ -24,9 +24,16 @@ db.create_all()
 toolbar = DebugToolbarExtension(app)
 
 
+@app.route("/")
+def homepage():
+    """Shows homepage"""
+    return render_template("index.html")
+
+
 @app.route("/api/cupcakes")
 def get_all_cupcakes():
-    """get data about all cupcakes"""
+    """get data about all cupcakes. Outputs jsonified cupcake object for
+       all cupcakes."""
 
     cupcakes = Cupcake.query.all()
     serialized = [c.serialize() for c in cupcakes]
@@ -36,7 +43,8 @@ def get_all_cupcakes():
 
 @app.route("/api/cupcakes/<int:cupcake_id>")
 def get_cupcake(cupcake_id):
-    """get data about a specific cupcake"""
+    """get data about a specific cupcake. Takes the cupcake_id from URL
+       and outputs jsonified cupcake object"""
 
     cupcake = Cupcake.query.get_or_404(cupcake_id)
     serialized = cupcake.serialize()
@@ -46,7 +54,16 @@ def get_cupcake(cupcake_id):
 
 @app.route("/api/cupcakes", methods=["POST"])
 def create_cupcake():
-    """Create a cupcake in database"""
+    """Create a cupcake in database. Receives an entire cupcake
+       object:
+       {
+           "flavor": "red velvet",
+           "size": "large",
+           "rating": 6,
+           "image": ""
+       }
+        and outputs the created cupcake jsonified object.
+       """
 
     flavor = request.json['flavor']
     size = request.json['size']
@@ -68,7 +85,15 @@ def create_cupcake():
 
 @app.route("/api/cupcakes/<int:cupcake_id>", methods=["PATCH"])
 def update_cupcake(cupcake_id):
-    """update a cupcake in the database"""
+    """update a cupcake in the database. Receives an entire cupcake
+       object:
+       {
+           "flavor": "red velvet",
+           "size": "large",
+           "rating": 6,
+           "image": ""
+       }
+       Will output updated cupcake jsonified object"""
 
     cupcake = Cupcake.query.get_or_404(cupcake_id)
 
@@ -81,12 +106,13 @@ def update_cupcake(cupcake_id):
 
     serialized = cupcake.serialize()
 
-    return (jsonify(cupcake=serialized), 200)
+    return jsonify(cupcake=serialized)
 
 
 @app.route("/api/cupcakes/<int:cupcake_id>", methods=["DELETE"])
 def delete_cupcake(cupcake_id):
-    """Delete a cupcake from the database"""
+    """Delete a cupcake from the database. Takes in cupcake_id from URL
+       and outputs a jsonified "deleted" message if successful."""
 
     cupcake = Cupcake.query.get_or_404(cupcake_id)
 

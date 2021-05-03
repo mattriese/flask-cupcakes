@@ -27,6 +27,12 @@ CUPCAKE_DATA_2 = {
     "image": "http://test.com/cupcake2.jpg"
 }
 
+CUPCAKE_DATA_BAD = {
+    "flavor": "Terrible",
+    "size": "Huge",
+    "rating": 1,
+    "image": "http://test.com/cupcake2.jpg"
+}
 
 class CupcakeViewsTestCase(TestCase):
     """Tests for views of API."""
@@ -83,6 +89,9 @@ class CupcakeViewsTestCase(TestCase):
                     "image": "http://test.com/cupcake.jpg"
                 }
             })
+            bad_url = "/api/cupcakes/bad"
+            bad_resp = client.get(bad_url)
+            self.assertEqual(bad_resp.status_code, 404)
 
     def test_create_cupcake(self):
         with app.test_client() as client:
@@ -112,17 +121,16 @@ class CupcakeViewsTestCase(TestCase):
         with app.test_client() as client:
             url = f"/api/cupcakes/{self.cupcake.id}"
             resp = client.patch(url, json=CUPCAKE_DATA_2)
-
+            bad_url = "/api/cupcakes/bad"
+            bad_resp = client.patch(bad_url, json=CUPCAKE_DATA_BAD)
             self.assertEqual(resp.status_code, 200)
+            self.assertEqual(bad_resp.status_code, 404)
 
             data = resp.json
 
-            # don't know what ID we'll get, make sure it's an int & normalize
-            self.assertIsInstance(data['cupcake']['id'], int)
-            del data['cupcake']['id']
-
             self.assertEqual(data, {
                 "cupcake": {
+                    "id": self.cupcake.id,
                     "flavor": "TestFlavor2",
                     "size": "TestSize2",
                     "rating": 10,
@@ -131,3 +139,22 @@ class CupcakeViewsTestCase(TestCase):
             })
 
             self.assertEqual(Cupcake.query.count(), 1)
+
+    def test_delete_cupcake(self):
+        with app.test_client() as client:
+            url = f"/api/cupcakes/{self.cupcake.id}"
+            resp = client.delete(url)
+
+            self.assertEqual(resp.status_code, 200)
+
+            data = resp.json
+
+            self.assertEqual(data, {"message": "deleted"})
+
+            self.assertEqual(Cupcake.query.count(), 0)
+
+            bad_url = "/api/cupcakes/bad"
+            bad_resp = client.patch(bad_url)
+            self.assertEqual(bad_resp.status_code, 404)
+
+# test sad paths
