@@ -21,17 +21,17 @@ class Cupcake(db.Model):
     __tablename__ = "cupcakes"
 
     id = db.Column(db.Integer,
-                    primary_key=True,
-                    autoincrement=True)
+                   primary_key=True,
+                   autoincrement=True)
     flavor = db.Column(db.String(30),
-                    nullable=False)
+                       nullable=False)
     size = db.Column(db.Text,
-                        nullable=False)
+                     nullable=False)
     rating = db.Column(db.Integer,
-                        nullable=False)
+                       nullable=False)
     image = db.Column(db.Text,
-                    nullable=False,
-                    default="https://tinyurl.com/demo-cupcake")
+                      nullable=True,
+                      default="https://tinyurl.com/demo-cupcake")
 
     def serialize(self):
         """serialize to dictionary"""
